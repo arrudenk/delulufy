@@ -607,3 +607,38 @@ button.ghost.big { font-family: var(--display); font-size: 1.05rem; padding: 12p
   .stickytop.mini .promobar .btext { font-size: .78rem; }
   .stickytop.mini .promobar .pdonate { padding: 3px 11px; font-size: .82rem; border-width: 2px; }
 }
+
+/* ---------- тумблер «я веган» ---------- */
+
+.nav button.vegan {
+  background: var(--mint);
+  transition: background .18s ease, color .18s ease, transform .18s cubic-bezier(.34, 1.8, .5, 1);
+}
+.nav button.vegan:hover { background: var(--mint); transform: translateY(-2px); }
+.nav button.vegan:active { transform: translateY(1px) scale(.97); }
+.nav button.vegan[aria-pressed="true"] {
+  background: var(--pink); color: var(--white); box-shadow: var(--shadow-sm);
+  transform: scale(1.04);   /* перестрибує мету й осідає — проліт у кривій вище */
+}
+
+#veganwash {
+  position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  opacity: 0; transition: opacity .8s ease;
+  background:
+    radial-gradient(circle at 18% 10%, rgba(255, 31, 119, .55), transparent 50%),
+    radial-gradient(circle at 84% 6%, rgba(255, 77, 150, .45), transparent 46%),
+    radial-gradient(circle at 50% 98%, rgba(255, 31, 119, .6), transparent 58%),
+    linear-gradient(#ffd0e4, #ffc2dc);
+}
+#veganwash.on { opacity: 1; }
+
+/* картки теж теплішають — інакше рожеве видно лише в полях між ними */
+body.vegan { --white: #ffe9f3; --cream-2: #ffd3e6; --pink-pale: #ffdcec; --blue-soft: #ffd0e4; }
+body.vegan { background: #ffc8de; }   /* сама сторінка, не лише шар під картками */
+body, .card, .lv, .hdr, .foot { transition: background-color .8s ease; }
+
+#veganpop {
+  position: fixed; inset: 0; z-index: 60; pointer-events: none;
+  overflow: hidden; contain: strict;
+}
+#veganpop span { position: absolute; font-size: 22px; line-height: 1; will-change: transform, opacity; }

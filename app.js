@@ -1093,6 +1093,7 @@
     ['label[for="tz"]', 'Часовий пояс', 'Time zone'],
     ['label[for="hsys"]', 'Система домів', 'House system'],
     ['label[for="nodetype"]', 'Вузол', 'Node'],
+    ['#vegan', '⛓️‍💥 Я веган', '⛓️‍💥 I am vegan', true],
     ['button.primary', '✨ Побудувати', '✨ Build it'],
     ['#now', '⏰ Зараз', '⏰ Now'],
     ['.foot', '🛰️ Усе рахується прямо тут, у браузері: VSOP87D для планет, ELP/Meeus для Місяця, доми — з істинного ' +
@@ -1113,7 +1114,7 @@
       var n = row[0] === 'title' ? document.querySelector('title') : document.querySelector(row[0]);
       if (!n) return;
       var txt = L(row[1], row[2]);
-      if (row[0].indexOf('[data-view=') === 0) {
+      if (row[0].indexOf('[data-view=') === 0 || row[3]) {   // емодзі лишається, підпис ховається на вузькому
         var i = txt.indexOf(' ');
         n.innerHTML = esc(txt.slice(0, i)) + '<span class="lbl">' + esc(txt.slice(i)) + '</span>';
       } else n.textContent = txt;
