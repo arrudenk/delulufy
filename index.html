@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Натальна карта ✦ твоя історія</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+
+  <aside class="promo" id="promo" hidden></aside>
+
+  <div class="stickytop">
+    <div class="promobar" id="promobar" hidden></div>
+    <header class="hdr">
+      <div class="brand" id="brand">🎀 <span id="brandname">Натальна карта</span> <span class="tag" id="brandtag">офлайн</span></div>
+      <nav class="nav" id="nav">
+      <button type="button" data-view="chart" aria-current="true">🪄 Карта</button>
+      <button type="button" data-view="story" aria-current="false" data-need="4">📖 Моя історія</button>
+      <button type="button" data-view="years" aria-current="false" data-need="2">🗓️ Роки</button>
+      <button type="button" data-view="table" aria-current="false" data-need="4">🧮 Таблиця</button>
+      </nav>
+      <div class="langsw" id="langsw">
+        <button type="button" data-lang="uk">UA</button><button type="button" data-lang="en">EN</button>
+      </div>
+    </header>
+  </div>
+
+  <!-- ─────────── рівні ─────────── -->
+  <section class="view on" id="view-chart">
+
+    <div class="lv open" id="lv0" data-lv="0">
+      <div class="lvhead"><span class="num">1</span><h2 id="lv0title">🐎 Рік</h2>
+        <span class="lvtag">спільне для всіх</span></div>
+      <div class="lvbody" id="lv0body"></div>
+      <div class="lvfoot"><button type="button" class="unlock" data-next="1">Зрозуміло, далі: мій рік →</button></div>
+    </div>
+
+    <div class="lv" id="lv1" data-lv="1">
+      <div class="lvhead"><span class="num">2</span><h2>🎂 Мій рік</h2>
+        <span class="lvtag">потрібні дата й місце народження</span></div>
+      <div class="lvbody">
+        <div class="chartgrid">
+      <form class="card form" id="form" autocomplete="off">
+        <h2>✏️ Хто ти і звідки</h2>
+
+        <div class="row">
+          <div>
+            <label for="name">Імʼя</label>
+            <input id="name" type="text" placeholder="як тебе звати?">
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label for="date">Дата народження</label>
+            <input id="date" type="date" value="1990-06-15" required>
+          </div>
+          <div>
+            <label for="time">Час</label>
+            <input id="time" type="time" value="14:45" step="60" required>
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label for="unknown">Знаєш точний час?</label>
+            <select id="unknown">
+              <option value="no">так, це точний час</option>
+              <option value="yes">нє, став полудень</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="cityfield">
+            <label for="city">Місто народження</label>
+            <input id="city" type="text" placeholder="Київ, Lviv, Berlin…" value="Київ">
+            <div class="suggest" id="suggest" hidden></div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label for="lat">Широта</label>
+            <input id="lat" type="number" step="0.0001" value="50.455">
+          </div>
+          <div>
+            <label for="lon">Довгота</label>
+            <input id="lon" type="number" step="0.0001" value="30.524">
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label for="tz">Часовий пояс</label>
+            <select id="tz"></select>
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label for="hsys">Система домів</label>
+            <select id="hsys">
+              <option value="placidus">Плацидус</option>
+              <option value="whole">Цілознакова</option>
+              <option value="equal">Рівнодомна</option>
+              <option value="porphyry">Порфирія</option>
+            </select>
+          </div>
+          <div>
+            <label for="nodetype">Вузол</label>
+            <select id="nodetype">
+              <option value="true">істинний</option>
+              <option value="mean">середній</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button type="submit" class="primary">✨ Побудувати</button>
+          <button type="button" class="ghost" id="now">⏰ Зараз</button>
+        </div>
+        <div class="coordnote" id="coordnote"></div>
+      </form>
+
+      <div class="card wheelcard">
+        <h2>🌙 Твоє небо</h2>
+        <div class="wheelwrap" id="wheelbox"></div>
+        <div class="legend">
+          <span><i style="border-color:var(--yellow)"></i>сполучення</span>
+          <span><i style="border-color:var(--pink)"></i>напруга</span>
+          <span><i style="border-color:var(--blue)"></i>підтримка</span>
+        </div>
+        <div class="selfstrip" id="facts"></div>
+      </div>
+        </div>
+        <div id="lv1body"></div>
+      </div>
+      <div class="lvfoot"><button type="button" class="unlock" data-next="2">Далі: розкласти рік по місяцях →</button></div>
+    </div>
+
+    <div class="lv" id="lv2" data-lv="2">
+      <div class="lvhead"><span class="num">3</span><h2>📆 Мої місяці</h2>
+        <span class="lvtag">рік зблизька</span></div>
+      <div class="lvbody" id="lv2body"></div>
+      <div class="lvfoot"><button type="button" class="unlock" data-next="3">Далі: сфери життя →</button></div>
+    </div>
+
+    <div class="lv" id="lv3" data-lv="3">
+      <div class="lvhead"><span class="num">4</span><h2>🏠 Мої сфери</h2>
+        <span class="lvtag">12 домів</span></div>
+      <div class="lvbody" id="lv3body"></div>
+      <div class="lvfoot"><button type="button" class="unlock" data-next="4">Далі: повна глибина →</button></div>
+    </div>
+
+    <div class="lv" id="lv4" data-lv="4">
+      <div class="lvhead"><span class="num">5</span><h2>🪐 Глибина</h2>
+        <span class="lvtag">усе решта відкрито</span></div>
+      <div class="lvbody" id="lv4body"></div>
+    </div>
+  </section>
+
+  <!-- ─────────── історія ─────────── -->
+  <section class="view" id="view-story">
+    <div class="storygrid">
+      <aside class="chapters">
+        <ol id="chapnav"></ol>
+      </aside>
+      <article class="story" id="storybody"></article>
+    </div>
+  </section>
+
+  <!-- ─────────── роки ─────────── -->
+  <section class="view" id="view-years">
+    <div class="card" id="yearsroot"></div>
+  </section>
+
+  <!-- ─────────── таблиця ─────────── -->
+  <section class="view" id="view-table">
+    <div class="card" id="tableroot"></div>
+  </section>
+
+  <div class="foot">
+    🛰️ Усе рахується прямо тут, у браузері: VSOP87D для планет, ELP/Meeus для Місяця, доми — з істинного
+    зоряного часу. Звірено зі Swiss Ephemeris на 1850–2100: планети в межах 2′, куспіди домів — 0.1′.
+    Хірон наближений (~0.3°). У мережу не йде нічого.
+  </div>
+</div>
+
+<script src="fundraiser.js"></script>
+<script src="vsop87.js"></script>
+<script src="astro.js"></script>
+<script src="cities.js"></script>
+<script src="tz.js"></script>
+<script src="interp.js"></script>
+<script src="i18n.js"></script>
+<script src="texts-sign.js"></script>
+<script src="texts-house.js"></script>
+<script src="texts-en.js"></script>
+<script src="reading.js"></script>
+<script src="forecast.js"></script>
+<script src="year.js"></script>
+<script src="wheel.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
