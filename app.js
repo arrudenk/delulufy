@@ -1038,6 +1038,8 @@
   }
 
   function syncBar() {
+    var top = document.querySelector('.stickytop');
+    if (top) top.classList.toggle('mini', window.scrollY > 60);
     var box = el('promo'), bar = el('promobar');
     if (!fr() || (FUNDRAISER.dismissible && promoHidden())) { bar.hidden = true; return; }
     var h = box.hidden ? 0 : box.offsetHeight;
@@ -1109,7 +1111,12 @@
   function applyStatic() {
     STATIC.forEach(function (row) {
       var n = row[0] === 'title' ? document.querySelector('title') : document.querySelector(row[0]);
-      if (n) n.textContent = L(row[1], row[2]);
+      if (!n) return;
+      var txt = L(row[1], row[2]);
+      if (row[0].indexOf('[data-view=') === 0) {
+        var i = txt.indexOf(' ');
+        n.innerHTML = esc(txt.slice(0, i)) + '<span class="lbl">' + esc(txt.slice(i)) + '</span>';
+      } else n.textContent = txt;
     });
     OPTIONS.forEach(function (row) {
       var sel = document.querySelector(row[0]);
