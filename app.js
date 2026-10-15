@@ -1142,14 +1142,18 @@
 
   var idleTimer = null, heartTimer = null;
 
+  function hasDonated() {
+    try { return localStorage.getItem('natal:donated') === '1'; } catch (e) { return false; }
+  }
+
   function armIdle() {
     clearTimeout(idleTimer);
-    if (el('nudge')) return;
-    idleTimer = setTimeout(showNudge, 50000);
+    if (el('nudge') || hasDonated()) return;
+    idleTimer = setTimeout(showNudge, 15000);
   }
 
   function showNudge() {
-    if (el('nudge') || !fr()) return;
+    if (el('nudge') || !fr() || hasDonated()) return;
     var t = frT();
     var n = document.createElement('div');
     n.id = 'nudge'; n.className = 'nudge';
@@ -1165,9 +1169,10 @@
   function f_jar() { var f = fr(); return f ? f.jar : '#'; }
 
   function nudgeOutside(e) {
-    var n = el('nudge');
-    if (!n) return;
-    if (e.target.closest('.ndonate')) return;      // донат не закриває
+    if (!el('nudge')) return;
+    if (e.target.closest('.ndonate')) {            // задонатив — більше не турбуємо
+      try { localStorage.setItem('natal:donated', '1'); } catch (err) { /* приватний режим */ }
+    }
     hideNudge();
   }
 
@@ -1178,7 +1183,7 @@
     if (n) n.remove();
     document.querySelectorAll('.heart').forEach(function (h) { h.remove(); });
     clearTimeout(idleTimer);
-    idleTimer = setTimeout(showNudge, 240000);     // за чотири хвилини спробуємо ще раз
+    if (!hasDonated()) idleTimer = setTimeout(showNudge, 180000);   // за три хвилини спробуємо ще раз
   }
 
   var HEARTS = ['💛', '💙', '💛', '💖', '🩵'];

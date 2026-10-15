@@ -726,9 +726,17 @@ body, .card, .lv, .hdr, .foot { transition: background-color .8s ease; }
 /* ---------- банер-нагадування ---------- */
 
 .nudge {
-  position: fixed; right: 18px; bottom: 18px; z-index: 90; width: min(290px, calc(100vw - 36px));
+  position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  z-index: 90; width: min(300px, calc(100vw - 36px));
   background: var(--white); border: 3px solid var(--line); border-radius: 22px;
   box-shadow: var(--shadow); padding: 14px 16px 16px; text-align: center;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .nudge { animation: pop .22s cubic-bezier(.34, 1.56, .64, 1); }
+  @keyframes pop {
+    from { opacity: 0; transform: translate(-50%, -50%) scale(.88); }
+    to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  }
 }
 .nudge .nclose {
   position: absolute; top: 8px; right: 9px; width: 28px; height: 28px; padding: 0;
@@ -751,6 +759,6 @@ body, .card, .lv, .hdr, .foot { transition: background-color .8s ease; }
 @keyframes fall {
   0% { opacity: 0; transform: translate(0, 0) rotate(0deg) scale(.6); }
   12% { opacity: 1; transform: translate(0, 14px) rotate(8deg) scale(1); }
-  100% { opacity: 0; transform: translate(var(--dx), 46vh) rotate(40deg) scale(.9); }
+  100% { opacity: 0; transform: translate(var(--dx), 52vh) rotate(40deg) scale(.9); }
 }
 @media (prefers-reduced-motion: reduce) { .heart { display: none; } }
