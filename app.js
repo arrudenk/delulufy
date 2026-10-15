@@ -214,6 +214,51 @@
 
   function bar(pct) { return '<div class="prog"><span style="width:' + Math.round(pct * 100) + '%"></span></div>'; }
 
+  /* --- шапка-герой: кільце стихій і тварин, що крутиться --- */
+
+  function renderHero() {
+    var ring = el('heroRing'), chips = el('heroChips');
+    if (!ring) return;
+    var animals = Y.ANIMAL, elements = Y.ELEMENTS;
+    var h = ['<div class="ring outer">'];
+    animals.forEach(function (a, i) {
+      h.push('<span style="--a:' + (i * 30) + 'deg" data-hero="animal" data-i="' + i + '">' + a.emo + '</span>');
+    });
+    h.push('</div><div class="ring inner">');
+    elements.forEach(function (e, i) {
+      h.push('<span style="--a:' + (i * 72) + 'deg" data-hero="element" data-i="' + i + '">' + e.emo + '</span>');
+    });
+    h.push('</div><div class="ringhub" id="ringhub">✦</div>');
+    ring.innerHTML = h.join('');
+
+    chips.innerHTML = elements.map(function (e, i) {
+      return '<button type="button" class="hchip" data-hero="element" data-i="' + i + '">' + e.emo + ' ' + e.ua + '</button>';
+    }).join('');
+    heroSay(L('Тицяй у будь-яке — розкажу, що воно означає.', 'Tap any of them — I will tell you what it means.'));
+  }
+
+  function heroSay(txt) {
+    var n = el('heroNote');
+    if (!n) {
+      n = document.createElement('div');
+      n.id = 'heroNote'; n.className = 'heronote';
+      el('heroChips').insertAdjacentElement('afterend', n);
+    }
+    n.textContent = txt;
+  }
+
+  function heroPick(kind, i) {
+    if (kind === 'element') {
+      var e = Y.ELEMENTS[i];
+      heroSay(e.emo + ' ' + e.ua + ' — ' + Y.ELEMENT5[e.id]);
+      el('ringhub').textContent = e.emo;
+    } else {
+      var a = Y.ANIMAL[i];
+      heroSay(a.emo + ' ' + a.ua + ' — ' + a.text);
+      el('ringhub').textContent = a.emo;
+    }
+  }
+
   /* --- рівень 0: рік, однаковий для всіх --- */
 
   /* --- диск років: два кільця, активне спереду й менше --- */
@@ -522,15 +567,79 @@
   /* --- рівень 4: все відкрито --- */
 
   function renderLevel4() {
-    el('lv4body').innerHTML =
-      '<p>' + L('Усе відкрито. Далі — повний розбір: планети по знаках і домах, аспекти, вузли, ' +
-        'будь-який рік життя з точними датами й сира таблиця координат.',
-        'Everything is unlocked. Ahead: the full reading — planets by sign and house, aspects, nodes, ' +
-        'any year of your life with exact dates, and the raw coordinate table.') + '</p>' +
+    var b = state.birth, h = [];
+    h.push(renderFutura());
+    h.push('<p>' + L('Усе відкрито. Далі — повний розбір: планети по знаках і домах, аспекти, вузли, ' +
+      'будь-який рік життя з точними датами й сира таблиця координат.',
+      'Everything is unlocked. Ahead: the full reading — planets by sign and house, aspects, nodes, ' +
+      'any year of your life with exact dates, and the raw coordinate table.') + '</p>' +
       '<div class="deeplinks">' +
       '<button type="button" class="cta" data-go="story">📖 ' + L('Моя історія', 'My story') + '</button>' +
       '<button type="button" class="ghost big" data-go="years">🗓️ ' + L('Будь-який рік', 'Any year') + '</button>' +
-      '<button type="button" class="ghost big" data-go="table">🧮 ' + L('Таблиця', 'Table') + '</button></div>';
+      '<button type="button" class="ghost big" data-go="table">🧮 ' + L('Таблиця', 'Table') + '</button></div>');
+    el('lv4body').innerHTML = h.join('');
+  }
+
+  /* --- футура мініма: найсхожіша карта серед відомих людей тієї ж місцевості --- */
+
+  function renderFutura() {
+    var b = state.birth;
+    if (typeof FUTURA === 'undefined' || typeof PEOPLE === 'undefined') return '';
+    var cc = cityCountry(b.lat, b.lon);
+    var m;
+    try { m = FUTURA.find({ jd: b.jd, lat: b.lat, lon: b.lon, cc: cc }); } catch (e) { return ''; }
+    if (!m) return '';
+    state.futura = m;
+
+    var p = m.person, en = LANGS.cur === 'en';
+    var name = en ? p[1] : p[0], city = en ? p[4] : p[3], role = en ? p[9] : p[8];
+    var d = p[2].split('-').map(Number);
+    var born = dateLabel({ year: d[0], month: d[1], day: d[2] });
+
+    var scope = m.scope === 'city'
+      ? L('народжена в тому самому місці', 'born in the same place')
+      : (m.scope === 'country' ? L('народжена в тій самій країні', 'born in the same country')
+        : L('знайдена по всьому світу', 'found anywhere in the world'));
+
+    var shared = m.same.length
+      ? L('Збігаються позиції: ', 'Matching placements: ') + m.same.map(function (k) {
+        return M.PLANET[k].emo + ' ' + M.PLANET[k].ua + ' ' + M.signByIndex(A.signIndex(FUTURA.signature(p[2])[k])).ua;
+      }).join(', ') + '.'
+      : L('Жодна планета не стоїть у тому самому знаку — збіг тут у кутах між світилами, а не в знаках.',
+        'No planet sits in the same sign — the resemblance here is in the angles between bodies, not the signs.');
+
+    return '<div class="futura">' +
+      '<div class="fkicker">🔮 ' + L('Футура мініма', 'Futura minima') + '</div>' +
+      '<div class="fname">' + L('Твоя Футура мініма це ', 'Your Futura minima is ') + '<b>' + esc(name) + '</b></div>' +
+      '<div class="fmeta">' + esc(role) + ' · ' + esc(city) + ' · ' + born + ' · ' + scope + '</div>' +
+      '<div class="fbar"><span style="width:' + Math.round(m.value * 100) + '%"></span></div>' +
+      '<div class="fscore">' + Math.round(m.value * 100) + L('% збігу по світилах', '% match across the bodies') + '</div>' +
+      '<p>' + shared + '</p>' +
+      '<p class="dim">' + L('Це не про долю, а про схожий малюнок неба: ті самі планети в тих самих знаках, ' +
+        'навіть якщо інший день, рік і століття. Дати взято з відкритих біографій, час народження там ' +
+        'майже ніколи не вказаний — тому рахуємо на полудень і порівнюємо лише знаки, не доми.',
+        'This is not about fate but about a similar drawing of the sky: the same planets in the same signs, ' +
+        'even if the day, year and century differ. Dates come from public biographies; birth times are almost ' +
+        'never recorded there, so we use noon and compare only signs, not houses.') + '</p>' +
+      (m.runnerUps && m.runnerUps.length
+        ? '<div class="fnext"><span class="k">' + L('Якби без привʼязки до місця', 'Ignoring the location') + ':</span> ' +
+        m.runnerUps.map(function (r) {
+          return '<span class="chip">' + esc(en ? r.person[1] : r.person[0]) + ' ' + Math.round(r.value * 100) + '%</span>';
+        }).join('') + '</div>'
+        : '') +
+      '<div class="fshare"><button type="button" class="cta" id="sharecard">📸 ' +
+      L('Зберегти картку', 'Save the card') + '</button></div>' +
+      '</div>';
+  }
+
+  /* країна за координатами — беремо найближче місто з бази */
+  function cityCountry(lat, lon) {
+    var best = null, bd = 1e9;
+    for (var i = 0; i < cities.length; i++) {
+      var c = cities[i], d = (c[3] - lat) * (c[3] - lat) + (c[4] - lon) * (c[4] - lon);
+      if (d < bd) { bd = d; best = c; }
+    }
+    return best && bd < 4 ? best[2] : null;
   }
 
   var RENDER = [renderLevel0, renderLevel1, renderLevel2, renderLevel3, renderLevel4];
@@ -551,6 +660,18 @@
       n.classList.toggle('locked', state.level < need);
       n.disabled = state.level < need;
     });
+  }
+
+  /* дані введені — відкриваємо все й везем у «Глибину» */
+  function unlockAll() {
+    state.level = MAXLV;
+    try { localStorage.setItem('natal:level', String(MAXLV)); } catch (e) { /* приватний режим */ }
+    for (var i = 0; i <= MAXLV; i++) { try { RENDER[i](); } catch (err) { console.error('рівень ' + i, err); } }
+    syncLocks();
+    setTimeout(function () {
+      var n = el('lv4');
+      if (n) n.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    }, 80);
   }
 
   function unlock(n) {
@@ -902,6 +1023,180 @@
     body.innerHTML = h.join('');
   }
 
+  /* ---------- картка для шеру ---------- */
+
+  function roundRect(x, y, w, h, r) {
+    var c = shareCtx;
+    c.beginPath();
+    c.moveTo(x + r, y);
+    c.arcTo(x + w, y, x + w, y + h, r);
+    c.arcTo(x + w, y + h, x, y + h, r);
+    c.arcTo(x, y + h, x, y, r);
+    c.arcTo(x, y, x + w, y, r);
+    c.closePath();
+  }
+
+  var shareCtx = null;
+
+  function buildShareCard() {
+    var S = 1080, cv = document.createElement('canvas');
+    cv.width = S; cv.height = S;
+    var c = cv.getContext('2d');
+    shareCtx = c;
+    var ch = state.chart, rd = state.reading, b = state.birth;
+    var ink = '#2b1b2b', pink = '#ff4d96';
+
+    c.fillStyle = '#fff4f8'; c.fillRect(0, 0, S, S);
+    [[0.14, 0.10, '#ffd84d', 0.30], [0.88, 0.08, '#7fd2ff', 0.30], [0.5, 1.02, '#ff4d96', 0.20]].forEach(function (g) {
+      var rad = c.createRadialGradient(g[0] * S, g[1] * S, 0, g[0] * S, g[1] * S, S * 0.55);
+      rad.addColorStop(0, g[2]); rad.addColorStop(1, 'rgba(255,255,255,0)');
+      c.globalAlpha = g[3]; c.fillStyle = rad; c.fillRect(0, 0, S, S); c.globalAlpha = 1;
+    });
+
+    c.fillStyle = '#ffffff'; c.strokeStyle = ink; c.lineWidth = 10;
+    roundRect(48, 48, S - 96, S - 96, 56); c.fill(); c.stroke();
+
+    var disp = '"Baloo 2", "Trebuchet MS", sans-serif';
+    var body = '"Nunito", system-ui, sans-serif';
+    c.textAlign = 'center'; c.fillStyle = ink;
+
+    c.font = '700 44px ' + disp;
+    c.fillText(L('Твоя карта ✦', 'Your chart ✦'), S / 2, 160);
+
+    if (b.name) { c.font = '800 70px ' + disp; c.fillText(b.name, S / 2, 240); }
+
+    var sun = M.signByIndex(ch.bodies.sun.signIndex), moon = M.signByIndex(ch.bodies.moon.signIndex);
+    var asc = rd.angles.asc.sign;
+    var rows = [
+      ['☀️', L('Сонце', 'Sun'), sun],
+      ['🌙', L('Місяць', 'Moon'), moon],
+      ['🚪', L('Асцендент', 'Ascendant'), asc]
+    ];
+    var y0 = b.name ? 330 : 300;
+    rows.forEach(function (r, i) {
+      var y = y0 + i * 118;
+      c.fillStyle = i === 0 ? '#fff0f6' : (i === 1 ? '#d9f0ff' : '#fffbe6');
+      c.strokeStyle = ink; c.lineWidth = 7;
+      roundRect(120, y, S - 240, 96, 30); c.fill(); c.stroke();
+      c.fillStyle = ink; c.textAlign = 'left';
+      c.font = '56px ' + body;
+      c.fillText(r[0], 158, y + 64);
+      c.font = '700 34px ' + body;
+      c.fillText(r[1], 232, y + 60);
+      c.textAlign = 'right';
+      c.font = '800 46px ' + disp;
+      c.fillText(r[2].emo + ' ' + r[2].ua, S - 158, y + 64);
+      c.textAlign = 'center';
+    });
+
+    var yb = y0 + 3 * 118 + 26;
+    var bal = rd.summary.balance.el;
+    var top = bal[0].pct || 1;   // відносна шкала: найсильніша стихія = повна смужка
+    var colors = { fire: '#ff9a6b', earth: '#b9f3d8', air: '#7fd2ff', water: '#9fc4ff' };
+    bal.forEach(function (e, i) {
+      var x = 130 + i * ((S - 260) / 4), w = (S - 260) / 4 - 16;
+      c.fillStyle = '#ffe9f1'; c.strokeStyle = ink; c.lineWidth = 6;
+      roundRect(x, yb, w, 54, 24); c.fill(); c.stroke();
+      c.save(); roundRect(x, yb, w, 54, 24); c.clip();
+      c.fillStyle = colors[e.k]; c.fillRect(x, yb, w * (e.pct / top), 54); c.restore();
+      c.strokeStyle = ink; roundRect(x, yb, w, 54, 24); c.stroke();
+      c.fillStyle = ink; c.font = '700 26px ' + body;
+      c.fillText(elEmo(e.k) + ' ' + Math.round(e.pct * 100) + '%', x + w / 2, yb + 36);
+    });
+
+    var ey = Y.easternYear(nowJulian());
+    c.font = '700 34px ' + body; c.fillStyle = ink;
+    c.fillText(ey.cycle.animal.emo + ' ' + ey.cycle.name + ' ' + ey.cycle.stem.emo, S / 2, yb + 130);
+
+    if (state.futura) {
+      var p = state.futura.person, nm = LANGS.cur === 'en' ? p[1] : p[0];
+      c.font = '700 32px ' + body; c.fillStyle = pink;
+      c.fillText('🔮 ' + L('Футура мініма: ', 'Futura minima: ') + nm, S / 2, yb + 182);
+    }
+
+    c.fillStyle = ink; c.font = '800 36px ' + disp;
+    c.fillText('delulufy.xyz', S / 2, S - 92);
+    return cv;
+  }
+
+  function shareCard() {
+    var cv;
+    try { cv = buildShareCard(); } catch (e) { console.error(e); return; }
+    cv.toBlob(function (blob) {
+      if (!blob) return;
+      var file = new File([blob], 'delulufy.png', { type: 'image/png' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        navigator.share({ files: [file], title: 'delulufy', text: L('Моя карта ✦ delulufy.xyz', 'My chart ✦ delulufy.xyz') })
+          .catch(function () { /* користувач скасував */ });
+      } else {
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'delulufy.png';
+        a.click();
+        setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
+      }
+    }, 'image/png');
+  }
+
+  /* ---------- банер-нагадування з сердечками ---------- */
+
+  var idleTimer = null, heartTimer = null;
+
+  function armIdle() {
+    clearTimeout(idleTimer);
+    if (el('nudge')) return;
+    idleTimer = setTimeout(showNudge, 50000);
+  }
+
+  function showNudge() {
+    if (el('nudge') || !fr()) return;
+    var t = frT();
+    var n = document.createElement('div');
+    n.id = 'nudge'; n.className = 'nudge';
+    n.innerHTML = '<button type="button" class="nclose" aria-label="' + esc(t.hide) + '">✕</button>' +
+      '<div class="nhearts">💛 💛 💛 💛 💛</div>' +
+      '<div class="ntext">' + esc(t.title) + '</div>' +
+      '<a class="ndonate" href="' + esc(f_jar()) + '" target="_blank" rel="noopener noreferrer">' + esc(t.donate) + '</a>';
+    document.body.appendChild(n);
+    heartTimer = setInterval(dropHeart, 320);
+    setTimeout(function () { document.addEventListener('click', nudgeOutside, true); }, 0);
+  }
+
+  function f_jar() { var f = fr(); return f ? f.jar : '#'; }
+
+  function nudgeOutside(e) {
+    var n = el('nudge');
+    if (!n) return;
+    if (e.target.closest('.ndonate')) return;      // донат не закриває
+    hideNudge();
+  }
+
+  function hideNudge() {
+    var n = el('nudge');
+    document.removeEventListener('click', nudgeOutside, true);
+    clearInterval(heartTimer); heartTimer = null;
+    if (n) n.remove();
+    document.querySelectorAll('.heart').forEach(function (h) { h.remove(); });
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(showNudge, 240000);     // за чотири хвилини спробуємо ще раз
+  }
+
+  var HEARTS = ['💛', '💙', '💛', '💖', '🩵'];
+  function dropHeart() {
+    var n = el('nudge');
+    if (!n || document.querySelectorAll('.heart').length > 24) return;
+    var r = n.getBoundingClientRect();
+    var h = document.createElement('span');
+    h.className = 'heart';
+    h.textContent = HEARTS[Math.floor(Math.random() * HEARTS.length)];
+    h.style.left = (r.left + 14 + Math.random() * (r.width - 28)) + 'px';
+    h.style.top = (r.bottom - 10) + 'px';
+    h.style.setProperty('--dx', (Math.random() * 60 - 30) + 'px');
+    h.style.animationDuration = (2.4 + Math.random() * 1.6) + 's';
+    h.addEventListener('animationend', function () { h.remove(); });
+    document.body.appendChild(h);
+  }
+
   /* ---------- екрани ---------- */
 
   var VIEWS = ['chart', 'story', 'years', 'table'];
@@ -930,6 +1225,8 @@
       if (g) return showView(g.dataset.go);
     });
     document.addEventListener('click', function (e) {
+      var hero = e.target.closest('[data-hero]');
+      if (hero) return heroPick(hero.dataset.hero, +hero.dataset.i);
       var seg = e.target.closest('[data-pick]');
       if (seg) {
         var sel = dialSelection(), kind = seg.dataset.pick;
@@ -942,6 +1239,8 @@
         sw.active = sw.active === 'animal' ? 'element' : 'animal';
         return renderLevel0();
       }
+      if (e.target.closest('#sharecard')) return shareCard();
+      if (e.target.closest('.nclose')) return hideNudge();
       if (e.target.closest('[data-today]')) { state.sel = null; return renderLevel0(); }
     });
     el('wheelbox').addEventListener('click', function (e) {
@@ -1073,6 +1372,12 @@
     ['#lv3 .lvhead h2', '🏠 Мої сфери', '🏠 My areas'],
     ['#lv4 .lvhead h2', '🪐 Глибина', '🪐 Depth'],
     ['#lv0 .lvtag', 'спільне для всіх', 'the same for everyone'],
+    ['#heroTitle', 'Небо на день твого народження — і що з ним робити',
+      'The sky on the day you were born — and what to do with it'],
+    ['#heroLead', 'Повна натальна карта рахується просто в браузері, без жодного сервера. ' +
+      'Спершу — рік, спільний для всіх. Далі твій рік, місяці, сфери життя й повний розбір.',
+      'A full natal chart, computed right in your browser with no server at all. ' +
+      'First the year everyone shares. Then your year, your months, your areas of life and the full reading.'],
     ['#lv1 .lvtag', 'потрібні дата й місце народження', 'needs your birth date and place'],
     ['#lv2 .lvtag', 'рік зблизька', 'the year up close'],
     ['#lv3 .lvtag', '12 домів', '12 houses'],
@@ -1138,6 +1443,7 @@
       b.setAttribute('aria-current', b.dataset.lang === lang);
     });
     applyStatic();
+    renderHero();
     renderPromo();
     if (state.chart) { state.yearCache = {}; build(); }
     else renderLevel0();
@@ -1158,16 +1464,26 @@
     applyStatic();
   }
 
+  ['click', 'keydown', 'scroll', 'touchstart'].forEach(function (ev) {
+    window.addEventListener(ev, function () { if (!el('nudge')) armIdle(); }, { passive: true });
+  });
+  armIdle();
+
   initTz();
   initCityField();
   initNav();
   initLang();
   renderPromo();
   restore();
+  renderHero();
   renderLevel0();   // рік спільний, не чекає на дані народження
   syncLocks();
 
-  el('form').addEventListener('submit', function (e) { e.preventDefault(); build(); unlock(Math.max(1, state.level)); });
+  el('form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    build();
+    unlockAll();
+  });
   ['date', 'time', 'tz', 'unknown'].forEach(function (id) {
     el(id).addEventListener('change', updateCoordNote);
   });
@@ -1182,4 +1498,7 @@
 
   build();
   if (location.hash) showView(location.hash.slice(1));
+
+  // невеликий публічний хендл: зручно перегенерувати картку з консолі
+  window.DELULUFY = { card: buildShareCard, share: shareCard, state: state };
 })();
