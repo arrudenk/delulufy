@@ -569,24 +569,27 @@ button.ghost.big { font-family: var(--display); font-size: 1.05rem; padding: 12p
 .promo .pwho { font-weight: 800; font-size: .9rem; color: var(--pink-hot); margin-bottom: 6px; }
 .promo .plead { font-size: .95rem; margin: 0 0 8px; max-width: 62ch; }
 .promo .pgoal { font-size: .95rem; font-weight: 700; margin-bottom: 12px; }
-.promo .pgoal b { font-family: var(--display); font-size: 1.1rem; }
+.promo .pgoal b { font-family: var(--display); font-size: 1.1rem; white-space: nowrap; }
 .promo .pacts { margin-left: 0; }
 @media (max-width: 720px) {
   /* чверть екрана під банер, картинка й текст поруч */
   .promo { height: 25vh; min-height: 150px; align-items: stretch; }
+  /* flex:none з базового правила не давав стиснутись, і квадрат брав власні
+     640px картинки. Тягнемо висоту від рядка, ширину бере aspect-ratio. */
   .promo .pimg {
-    width: auto; height: auto; aspect-ratio: 1; margin: 10px 0 10px 10px;
-    border-radius: 16px; border-width: 2.5px;
+    height: calc(100% - 20px); width: auto; aspect-ratio: 1;
+    margin: 10px 0 10px 10px; border-radius: 16px; border-width: 2.5px;
   }
-  .promo .ptext { padding: 10px 12px; overflow: hidden; }
+  .promo .ptext { padding: 10px 12px; overflow: hidden; flex: 1 1 0; min-width: 0; }
   .promo .pkicker { font-size: .62rem; }
   .promo .ptitle { font-size: 1.1rem; }
   .promo .pwho { font-size: .72rem; margin-bottom: 3px; }
   .promo .plead { display: none; }
   .promo .pgoal { font-size: .78rem; margin-bottom: 7px; }
   .promo .pgoal b { font-size: .92rem; }
-  .promo .pacts a { font-size: .82rem; padding: 5px 12px; }
-  .promo .pclose { top: 6px; right: 7px; width: 24px; height: 24px; }
+  .promo .pacts { flex-wrap: wrap; gap: 6px; }
+  .promo .pacts a { font-size: .8rem; padding: 5px 10px; }
+  .promo .pclose { top: 7px; right: 8px; width: 32px; height: 32px; font-size: .9rem; }
 }
 
 .langsw { display: flex; margin-left: 10px; flex: none; }
@@ -762,3 +765,12 @@ body, .card, .lv, .hdr, .foot { transition: background-color .8s ease; }
   100% { opacity: 0; transform: translate(var(--dx), 52vh) rotate(40deg) scale(.9); }
 }
 @media (prefers-reduced-motion: reduce) { .heart { display: none; } }
+
+/* На вузькому екрані в 25vh колонка тексту не влазить: 275px контенту
+   в рядок 211px. Лишаємо тільки те, заради чого банер існує. */
+@media (max-width: 430px) {
+  .promo .pwho { display: none; }
+  .promo .ppost { display: none; }
+  .promo .ptitle { font-size: 1.02rem; }
+  .promo .pgoal { margin-bottom: 8px; }
+}
